@@ -1,0 +1,41 @@
+{
+  "name": "@kash/pos",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@kash/supabase": "workspace:*",
+    "@kash/sync": "workspace:*",
+    "@kash/types": "workspace:*",
+    "@kash/ui": "workspace:*",
+    "@powersync/react": "^1.5.0",
+    "@powersync/web": "^1.13.0",
+    "@tanstack/react-query": "^5.56.2",
+    "date-fns": "^3.6.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.53.0",
+    "react-router-dom": "^6.26.2",
+    "sonner": "^1.7.0",
+    "lucide-react": "^0.462.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@kash/config": "workspace:*",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.11",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.1"
+  }
+}

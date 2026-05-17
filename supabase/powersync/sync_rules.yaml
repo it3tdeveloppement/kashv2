@@ -1,0 +1,177 @@
+# Kash V2 — PowerSync sync rules
+# Multi-tenant scoping: JWT claims { tenant_id, establishment_id, role }
+# Roles: pos | kiosk | kds
+
+bucket_definitions:
+
+  # ─── Shared catalog ────────────────────────────────────────────────────────
+  # Syncs to: POS, kiosk, KDS (all roles)
+  # Scope: child tenant + parent tenant (for inherited catalog)
+  tenant_catalog:
+    parameters:
+      - name: tenant_id
+        value: token_parameters.tenant_id
+    data:
+      - table: products
+        where: >
+          is_active = true
+          AND (
+            tenant_id = :tenant_id
+            OR tenant_id = (SELECT parent_tenant_id FROM tenants WHERE id = :tenant_id)
+          )
+
+      - table: categories
+        where: >
+          is_active = true
+          AND (
+            tenant_id = :tenant_id
+            OR tenant_id = (SELECT parent_tenant_id FROM tenants WHERE id = :tenant_id)
+          )
+
+      - table: customization_phases
+        where: >
+          is_active = true
+          AND (
+            tenant_id = :tenant_id
+            OR tenant_id = (SELECT parent_tenant_id FROM tenants WHERE id = :tenant_id)
+          )
+
+      - table: customization_options
+        where: >
+          is_available = true
+          AND (
+            tenant_id = :tenant_id
+            OR tenant_id = (SELECT parent_tenant_id FROM tenants WHERE id = :tenant_id)
+          )
+
+      - table: product_customization_phases
+        where: >
+          tenant_id = :tenant_id
+          OR tenant_id = (SELECT parent_tenant_id FROM tenants WHERE id = :tenant_id)
+
+      - table: customization_option_groups
+        where: >
+          is_active = true
+          AND (
+            tenant_id = :tenant_id
+            OR tenant_id = (SELECT parent_tenant_id FROM tenants WHERE id = :tenant_id)
+          )
+
+      - table: order_types
+        where: >
+          is_active = true
+          AND (
+            tenant_id = :tenant_id
+            OR tenant_id = (SELECT parent_tenant_id FROM tenants WHERE id = :tenant_id)
+          )
+
+      - table: payment_methods
+        where: >
+          is_active = true
+          AND (
+            tenant_id = :tenant_id
+            OR tenant_id = (SELECT parent_tenant_id FROM tenants WHERE id = :tenant_id)
+          )
+
+      - table: tenant_settings
+        where: >
+          tenant_id = :tenant_id
+          OR tenant_id = (SELECT parent_tenant_id FROM tenants WHERE id = :tenant_id)
+
+      - table: establishments
+        where: >
+          tenant_id = :tenant_id
+          AND is_active = true
+
+      - table: tenants
+        where: >
+          id = :tenant_id
+          OR id = (SELECT parent_tenant_id FROM tenants WHERE id = :tenant_id)
+
+  # ─── POS-specific data ─────────────────────────────────────────────────────
+  # Syncs to: POS only (role = pos)
+  pos_data:
+    parameters:
+      - name: tenant_id
+        value: token_parameters.tenant_id
+      - name: establishment_id
+        value: token_parameters.establishment_id
+    where: token_parameters.role = 'pos'
+    data:
+      - table: pos_transactions
+        where: >
+          tenant_id = :tenant_id
+          AND created_at > (now() - interval '48 hours')
+
+      - table: pos_transaction_items
+        where: >
+          transaction_id IN (
+            SELECT id FROM pos_transactions
+            WHERE tenant_id = :tenant_id
+              AND created_at > (now() - interval '48 hours')
+          )
+
+      - table: pos_sessions
+        where: >
+          tenant_id = :tenant_id
+
+      - table: customers
+        where: >
+          tenant_id = :tenant_id
+
+      - table: loyalty_accounts
+        where: >
+          tenant_id = :tenant_id
+
+      - table: loyalty_rewards
+        where: >
+          tenant_id = :tenant_id
+
+      - table: restaurant_tables
+        where: >
+          tenant_id = :tenant_id
+          AND is_active = true
+
+      - table: restaurant_zones
+        where: >
+          tenant_id = :tenant_id
+          AND is_active = true
+
+      - table: profiles
+        where: >
+          tenant_id = :tenant_id
+
+  # ─── Kitchen data ──────────────────────────────────────────────────────────
+  # Syncs to: KDS (role = kds)
+  # Multi-tenant: parent sees orders from all active children
+  kitchen_data:
+    parameters:
+      - name: tenant_id
+        value: token_parameters.tenant_id
+    where: token_parameters.role = 'kds'
+    data:
+      - table: kitchen_orders
+        where: >
+          created_at > (now() - interval '24 hours')
+          AND (
+            tenant_id = :tenant_id
+            OR tenant_id IN (
+              SELECT id FROM tenants
+              WHERE parent_tenant_id = :tenant_id
+                AND is_active = true
+            )
+          )
+
+  # ─── Kiosk data ─────────────────────────────────────────────────────────────
+  # Syncs to: kiosk (role = kiosk)
+  # Light bucket — catalog is already in tenant_catalog
+  kiosk_orders:
+    parameters:
+      - name: tenant_id
+        value: token_parameters.tenant_id
+    where: token_parameters.role = 'kiosk'
+    data:
+      - table: kitchen_orders
+        where: >
+          tenant_id = :tenant_id
+          AND created_at > (now() - interval '2 hours')

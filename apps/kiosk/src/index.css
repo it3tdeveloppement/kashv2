@@ -1,0 +1,8 @@
+@import "@kash/ui/design";
+
+/* Kiosk-specific: no text selection, no tap highlight */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}

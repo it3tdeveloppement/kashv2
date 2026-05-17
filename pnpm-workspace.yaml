@@ -1,0 +1,9 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+onlyBuiltDependencies:
+  - "@journeyapps/wa-sqlite"
+  - esbuild
+  - "@biomejs/biome"
+  - better-sqlite3

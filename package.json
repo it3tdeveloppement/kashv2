@@ -1,0 +1,22 @@
+{
+  "name": "kashv2",
+  "private": true,
+  "version": "0.0.1",
+  "packageManager": "pnpm@10.33.4",
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "dev:backoffice": "turbo dev --filter=@kash/backoffice",
+    "dev:pos": "turbo dev --filter=@kash/pos",
+    "dev:kiosk": "turbo dev --filter=@kash/kiosk",
+    "dev:kitchen": "turbo dev --filter=@kash/kitchen",
+    "dev:shop": "turbo dev --filter=@kash/shop",
+    "typecheck": "turbo typecheck",
+    "lint": "turbo lint",
+    "clean": "turbo clean"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.6.3"
+  }
+}
