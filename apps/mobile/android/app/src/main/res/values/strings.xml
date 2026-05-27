@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Kash POS</string>
+    <string name="title_activity_main">Kash POS</string>
+    <string name="package_name">ma.kash.pos</string>
+    <string name="custom_url_scheme">ma.kash.pos</string>
+</resources>

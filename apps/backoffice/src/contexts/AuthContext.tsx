@@ -20,11 +20,25 @@ interface AuthContextValue {
   isSuperAdmin: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  switchTenant: (tenantId: string) => void;
+  switchTenant: (tenantId: string | null) => void;
   role: AppRole | null;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+const TENANT_CONTEXT_KEY = "kash_current_tenant_id";
+const AUTH_REQUEST_TIMEOUT_MS = 10_000;
+
+async function withTimeout<T>(promise: PromiseLike<T>, timeoutMs: number): Promise<T> {
+  return await Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      const timer = setTimeout(() => {
+        clearTimeout(timer);
+        reject(new Error("AUTH_TIMEOUT"));
+      }, timeoutMs);
+    }),
+  ]);
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -34,51 +48,90 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const loadProfile = useCallback(async (userId: string) => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
+    try {
+      const result = await withTimeout(
+        supabase.from("profiles").select("*").eq("id", userId).single() as PromiseLike<{
+          data: Profile | null;
+          error: unknown;
+        }>,
+        AUTH_REQUEST_TIMEOUT_MS
+      );
+      const { data, error } = result;
+      if (error || !data) return null;
+      return data;
+    } catch {
+      return null;
+    }
+  }, []);
 
-    if (error || !data) return null;
-    return data as Profile;
+  const resolveCurrentTenantId = useCallback((p: Profile | null): string | null => {
+    if (!p) return null;
+    if (p.tenant_id !== null) return p.tenant_id;
+    return localStorage.getItem(TENANT_CONTEXT_KEY);
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    let cancelled = false;
 
-      if (session?.user) {
-        const p = await loadProfile(session.user.id);
-        setProfile(p);
-        // Superadmin has null tenant_id — handle defensively
-        setCurrentTenantId(p?.tenant_id ?? null);
+    const bootstrapSession = async () => {
+      try {
+        const { data: { session } } = await withTimeout(
+          supabase.auth.getSession(),
+          AUTH_REQUEST_TIMEOUT_MS
+        );
+        if (cancelled) return;
+
+        setSession(session);
+        setUser(session?.user ?? null);
+
+        if (session?.user) {
+          const p = await loadProfile(session.user.id);
+          if (cancelled) return;
+          setProfile(p);
+          setCurrentTenantId(resolveCurrentTenantId(p));
+        }
+      } catch {
+        if (!cancelled) {
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setCurrentTenantId(null);
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
+    };
 
-      setIsLoading(false);
-    });
+    bootstrapSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
 
         if (session?.user) {
           const p = await loadProfile(session.user.id);
           setProfile(p);
-          setCurrentTenantId(p?.tenant_id ?? null);
+          setCurrentTenantId(resolveCurrentTenantId(p));
         } else {
           setProfile(null);
           setCurrentTenantId(null);
         }
 
-        if (event === "INITIAL_SESSION") setIsLoading(false);
+        setIsLoading(false);
       }
     );
 
-    return () => subscription.unsubscribe();
-  }, [loadProfile]);
+    const hardStop = setTimeout(() => {
+      if (!cancelled) setIsLoading(false);
+    }, AUTH_REQUEST_TIMEOUT_MS + 1_500);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(hardStop);
+      subscription.unsubscribe();
+    };
+  }, [loadProfile, resolveCurrentTenantId]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -89,8 +142,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
   }, []);
 
-  /** Superadmin context switch — switches currentTenantId without changing profile */
-  const switchTenant = useCallback((tenantId: string) => {
+  const switchTenant = useCallback((tenantId: string | null) => {
+    if (tenantId) {
+      localStorage.setItem(TENANT_CONTEXT_KEY, tenantId);
+    } else {
+      localStorage.removeItem(TENANT_CONTEXT_KEY);
+    }
     setCurrentTenantId(tenantId);
   }, []);
 

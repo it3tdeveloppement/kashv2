@@ -1,4 +1,4 @@
-@import "@kash/ui/design/tokens.css";
+@import "@kash/ui/design";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -49,13 +49,15 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        user_id: profile.id,
+        user: {
+          id: profile.id,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          role: profile.role,
+        },
+        session_token: sessionToken,
         tenant_id,
         establishment_id: estId,
-        role: profile.role,
-        first_name: profile.first_name,
-        last_name: profile.last_name,
-        session_token: sessionToken,
         powersync_token: powersyncToken,
         expires_at: expiresAt,
       }),

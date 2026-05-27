@@ -3,3 +3,4 @@ export * from "./terminal";
 export * from "./click-collect";
 export * from "./auth";
 export * from "./kitchen";
+export * from "./users";

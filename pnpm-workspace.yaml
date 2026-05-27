@@ -7,3 +7,4 @@ onlyBuiltDependencies:
   - esbuild
   - "@biomejs/biome"
   - better-sqlite3
+  - sharp

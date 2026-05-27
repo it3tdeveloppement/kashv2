@@ -1,15 +1,16 @@
 import { useEffect } from "react";
+import { ChefHat, CircleDot } from "lucide-react";
 import { useKDSAuth } from "../contexts/KDSAuthContext";
 import { useSync } from "../contexts/SyncContext";
 import { useKitchenOrders } from "../hooks/useKitchenOrders";
 import { OrderCard } from "../components/OrderCard";
-import { initKitchenBroadcast, destroyKitchenBroadcast } from "../broadcast/kitchenBroadcast";
+import { destroyKitchenBroadcast, initKitchenBroadcast } from "../broadcast/kitchenBroadcast";
 
 const COLUMNS = [
-  { status: "pending" as const, label: "En attente", color: "#f59e0b" },
-  { status: "confirmed" as const, label: "Confirmé", color: "#3b82f6" },
-  { status: "preparing" as const, label: "En préparation", color: "#f97316" },
-  { status: "ready" as const, label: "Prêt", color: "#97f56d" },
+  { status: "pending" as const, label: "En attente", color: "#f6b73c" },
+  { status: "confirmed" as const, label: "Confirme", color: "#4d9cff" },
+  { status: "preparing" as const, label: "Preparation", color: "#ff8f42" },
+  { status: "ready" as const, label: "Pret", color: "#97f56d" },
 ];
 
 export function KDSDisplay() {
@@ -24,10 +25,10 @@ export function KDSDisplay() {
 
   if (!isReady || isLoading) {
     return (
-      <div className="fixed inset-0 bg-[#111111] flex flex-col items-center justify-center gap-4">
-        <div className="w-10 h-10 rounded-full border-4 border-[#97f56d] border-t-transparent animate-spin" />
-        <p className="text-white/40 text-sm">
-          {!isReady ? "Synchronisation en cours…" : "Chargement des commandes…"}
+      <div className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-[#101614]">
+        <div className="h-10 w-10 rounded-full border-4 border-[#97f56d] border-t-transparent animate-spin" />
+        <p className="text-sm text-white/60">
+          {!isReady ? "Synchronisation en cours..." : "Chargement des commandes..."}
         </p>
       </div>
     );
@@ -36,56 +37,60 @@ export function KDSDisplay() {
   const totalActive = COLUMNS.reduce((sum, col) => sum + (byStatus.get(col.status)?.length ?? 0), 0);
 
   return (
-    <div className="fixed inset-0 bg-[#111111] flex flex-col">
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#97f56d] flex items-center justify-center">
-            <span className="text-black font-black text-sm font-otacos">K</span>
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#101614]">
+      <header className="border-b border-white/10 bg-[#18231e] px-5 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <img src="/logo-kash.svg" alt="Kash" className="h-9 w-auto object-contain" />
+            <div>
+              <p className="text-sm font-semibold text-white">Kash KDS</p>
+              <p className="text-xs text-white/50">Cuisine en temps reel</p>
+            </div>
           </div>
-          <span className="text-white font-bold">Kash KDS</span>
+          <div className="flex items-center gap-3 rounded-lg border border-white/10 bg-black/20 px-3 py-1.5 text-sm text-white/80">
+            <CircleDot className="h-4 w-4 text-[#97f56d]" />
+            {totalActive} commande{totalActive > 1 ? "s" : ""} active{totalActive > 1 ? "s" : ""}
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-white/40 text-sm">{totalActive} commande{totalActive !== 1 ? "s" : ""} active{totalActive !== 1 ? "s" : ""}</span>
-          <div className="w-2 h-2 rounded-full bg-[#97f56d] animate-pulse" />
-        </div>
-      </div>
+      </header>
 
-      {/* Kanban columns */}
-      <div className="flex-1 grid grid-cols-4 gap-px bg-white/5 overflow-hidden">
-        {COLUMNS.map((col) => {
-          const orders = byStatus.get(col.status) ?? [];
+      <div className="grid flex-1 grid-cols-1 gap-2 bg-[#0d1311] p-2 lg:grid-cols-4">
+        {COLUMNS.map((column) => {
+          const orders = byStatus.get(column.status) ?? [];
           return (
-            <div key={col.status} className="flex flex-col bg-[#111111] overflow-hidden">
-              {/* Column header */}
-              <div
-                className="flex items-center justify-between px-4 py-3 border-b"
-                style={{ borderColor: col.color + "44" }}
-              >
-                <span className="font-bold text-sm" style={{ color: col.color }}>
-                  {col.label}
+            <section
+              key={column.status}
+              className="flex min-h-0 flex-col rounded-xl border border-white/10 bg-[#141d19]"
+            >
+              <div className="flex items-center justify-between border-b border-white/10 px-3 py-2.5">
+                <div className="flex items-center gap-2">
+                  <ChefHat className="h-4 w-4" style={{ color: column.color }} />
+                  <h2 className="text-sm font-semibold" style={{ color: column.color }}>
+                    {column.label}
+                  </h2>
+                </div>
+                <span
+                  className="rounded-full px-2 py-0.5 text-xs font-black text-black"
+                  style={{ backgroundColor: column.color }}
+                >
+                  {orders.length}
                 </span>
-                {orders.length > 0 && (
-                  <span
-                    className="text-xs font-black px-2 py-0.5 rounded-full text-black"
-                    style={{ backgroundColor: col.color }}
-                  >
-                    {orders.length}
-                  </span>
-                )}
               </div>
 
-              {/* Orders */}
-              <div className="flex-1 overflow-y-auto p-3 space-y-3">
+              <div className="min-h-0 flex-1 overflow-y-auto p-3">
                 {orders.length === 0 ? (
-                  <div className="flex items-center justify-center h-full">
-                    <p className="text-white/20 text-sm">Aucune commande</p>
+                  <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-white/10">
+                    <p className="text-xs text-white/35">Aucune commande</p>
                   </div>
                 ) : (
-                  orders.map((order) => <OrderCard key={order.id} order={order} />)
+                  <div className="space-y-3">
+                    {orders.map((order) => (
+                      <OrderCard key={order.id} order={order} />
+                    ))}
+                  </div>
                 )}
               </div>
-            </div>
+            </section>
           );
         })}
       </div>

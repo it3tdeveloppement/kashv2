@@ -27,6 +27,8 @@ import { MarketingPage } from "./pages/Marketing";
 import { MonitoringPage } from "./pages/Monitoring";
 import { SupportPage } from "./pages/Support";
 import { NotFoundPage } from "./pages/NotFound";
+import { AccessControlPage } from "./pages/AccessControl";
+import { UsersPage } from "./pages/Users";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,6 +72,8 @@ export function App() {
               <Route path="/marketing-automation" element={<MarketingPage />} />
               <Route path="/monitoring" element={<MonitoringPage />} />
               <Route path="/support" element={<SupportPage />} />
+              <Route path="/access-control" element={<AccessControlPage />} />
+              <Route path="/users" element={<UsersPage />} />
             </Route>
 
             {/* Fallbacks */}

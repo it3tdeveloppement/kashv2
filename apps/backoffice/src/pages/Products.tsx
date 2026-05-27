@@ -2,17 +2,23 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@kash/supabase";
 import { useAuth } from "../contexts/AuthContext";
-import { Card, CardContent, Button, Badge } from "@kash/ui";
+import { Card, CardContent, Button, Badge, useCurrencySymbol } from "@kash/ui";
 import { Plus, Search, Edit2, ImageOff, Package } from "lucide-react";
 import { Input } from "@kash/ui";
 import { toast } from "sonner";
 import type { Product, Category } from "@kash/types";
+import { useModulePermissions } from "../contexts/ModulePermissionsContext";
+import { AccessDeniedPanel } from "../components/AccessDeniedPanel";
 
 export function ProductsPage() {
   const { currentTenantId } = useAuth();
+  const { canReadModule, canWriteModule } = useModulePermissions();
+  const { formatPrice } = useCurrencySymbol("MAD");
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const qc = useQueryClient();
+  const canRead = canReadModule("products");
+  const canWrite = canWriteModule("products");
 
   const { data: categories = [] } = useQuery({
     queryKey: ["categories", currentTenantId],
@@ -47,6 +53,7 @@ export function ProductsPage() {
 
   const toggleActive = useMutation({
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
+      if (!canWrite) throw new Error("Aucune permission d'ecriture");
       const { error } = await supabase
         .from("products")
         .update({ is_active })
@@ -65,6 +72,15 @@ export function ProductsPage() {
     p.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  if (!canRead) {
+    return (
+      <AccessDeniedPanel
+        title="Acces produits indisponible"
+        message="Votre compte n'a pas la permission de lecture sur le module Produits."
+      />
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -72,7 +88,11 @@ export function ProductsPage() {
           <h1 className="text-2xl font-bold font-otacos">Produits</h1>
           <p className="text-sm text-muted-foreground">{products.length} produit(s)</p>
         </div>
-        <Button className="gap-2">
+        <Button
+          className="gap-2"
+          disabled={!canWrite}
+          onClick={() => !canWrite && toast.error("Permission d'ecriture requise")}
+        >
           <Plus className="w-4 h-4" /> Nouveau produit
         </Button>
       </div>
@@ -139,7 +159,11 @@ export function ProductsPage() {
                   </div>
                 )}
                 <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button className="w-7 h-7 rounded-md bg-background/90 flex items-center justify-center hover:bg-background shadow-sm">
+                  <button
+                    className="w-7 h-7 rounded-md bg-background/90 flex items-center justify-center hover:bg-background shadow-sm disabled:opacity-40"
+                    disabled={!canWrite}
+                    onClick={() => !canWrite && toast.error("Permission d'ecriture requise")}
+                  >
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -153,15 +177,16 @@ export function ProductsPage() {
                 <p className="font-medium text-sm truncate">{product.name}</p>
                 <div className="flex items-center justify-between mt-1">
                   <span className="font-bold text-primary text-sm">
-                    {product.price.toFixed(2)} Dhs
+                    {formatPrice(product.price)}
                   </span>
                   <button
+                    disabled={!canWrite}
                     onClick={() =>
                       toggleActive.mutate({ id: product.id, is_active: !product.is_active })
                     }
                     className={`w-8 h-4 rounded-full transition-colors ${
                       product.is_active ? "bg-primary" : "bg-muted"
-                    }`}
+                    } disabled:opacity-50`}
                   >
                     <span className="sr-only">Toggle</span>
                   </button>

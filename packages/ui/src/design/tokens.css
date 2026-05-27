@@ -1,88 +1,97 @@
-/* ─── Kash V2 Design Tokens ───────────────────────────────────────────────── */
-/* Primary: #97f56d (bright green) — text on it must be #000 (black)          */
-/* Logo mark: #a3cf66                                                           */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* Kash V2 design tokens */
+/* Primary brand green: #97f56d */
 
 @layer base {
   :root {
-    /* Kash green: #97f56d → HSL(97, 88%, 69%) */
     --primary: 97 88% 69%;
-    --primary-foreground: 0 0% 0%;      /* black text on green */
+    --primary-foreground: 0 0% 6%;
 
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 115 23% 97%;
+    --foreground: 160 20% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 160 20% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 160 20% 12%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 130 20% 92%;
+    --secondary-foreground: 155 18% 20%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 125 16% 93%;
+    --muted-foreground: 158 12% 36%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 101 73% 90%;
+    --accent-foreground: 154 22% 14%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 3 74% 54%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 97 88% 69%;
+    --border: 126 20% 85%;
+    --input: 126 20% 85%;
+    --ring: 97 88% 62%;
+    --radius: 0.7rem;
 
-    --radius: 0.5rem;
-
-    /* Sidebar */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-background: 158 30% 11%;
+    --sidebar-foreground: 120 18% 91%;
     --sidebar-primary: 97 88% 69%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
+    --sidebar-primary-foreground: 0 0% 8%;
+    --sidebar-accent: 158 22% 18%;
+    --sidebar-accent-foreground: 130 30% 95%;
+    --sidebar-border: 158 20% 23%;
     --sidebar-ring: 97 88% 69%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 158 23% 8%;
+    --foreground: 130 18% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 158 24% 11%;
+    --card-foreground: 130 18% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 158 24% 11%;
+    --popover-foreground: 130 18% 95%;
 
     --primary: 97 88% 69%;
-    --primary-foreground: 0 0% 0%;
+    --primary-foreground: 0 0% 8%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 158 19% 15%;
+    --secondary-foreground: 130 18% 95%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 157 18% 18%;
+    --muted-foreground: 134 12% 70%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 158 20% 16%;
+    --accent-foreground: 130 18% 96%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 58% 40%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    --border: 157 16% 24%;
+    --input: 157 16% 24%;
     --ring: 97 88% 69%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-background: 157 28% 7%;
+    --sidebar-foreground: 130 20% 94%;
     --sidebar-primary: 97 88% 69%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-primary-foreground: 0 0% 8%;
+    --sidebar-accent: 157 21% 14%;
+    --sidebar-accent-foreground: 130 22% 96%;
+    --sidebar-border: 157 20% 20%;
     --sidebar-ring: 97 88% 69%;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    background:
+      radial-gradient(1100px 500px at 100% -50px, hsl(97 88% 69% / 0.22), transparent 62%),
+      radial-gradient(900px 420px at -120px 100%, hsl(160 65% 82% / 0.24), transparent 60%),
+      hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 }

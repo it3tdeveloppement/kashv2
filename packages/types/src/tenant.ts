@@ -108,6 +108,18 @@ export interface UserTenantAccess {
   created_at: string;
 }
 
+export interface ModuleFamily {
+  id: string;
+  tenant_id: string;
+  name: string;
+  display_name: string;
+  icon: string | null;
+  display_order: number;
+  is_visible: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Module {
   id: string;
   tenant_id: string;
@@ -122,6 +134,27 @@ export interface Module {
   has_write_capability: boolean;
 }
 
+export interface TenantModuleAccess {
+  id: string;
+  tenant_id: string;
+  module_id: string;
+  is_enabled: boolean;
+  propagate_to_children: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserModulePermission {
+  id: string;
+  user_id: string;
+  tenant_id: string;
+  module_id: string;
+  can_read: boolean;
+  can_write: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SubscriptionPlan {
   id: string;
   name: string;
@@ -133,4 +166,18 @@ export interface SubscriptionPlan {
   features: Record<string, unknown>;
   plan_type: PlanType;
   billing_period: BillingPeriod;
+}
+
+export interface TenantSubscription {
+  id: string;
+  tenant_id: string;
+  plan_id: string | null;
+  status: "trialing" | "active" | "past_due" | "cancelled" | string;
+  billing_period: BillingPeriod;
+  starts_at: string;
+  trial_ends_at: string | null;
+  current_period_ends_at: string | null;
+  cancelled_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
